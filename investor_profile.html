@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>투자자 프로파일</title>
+<style>
+:root{--s0:#f5f4ef;--s1:#faf9f5;--s2:#ffffff;--bd:rgba(0,0,0,0.10);--acc:#378add;--bgacc:#e6f1fb;--tp:#1a1a18;--ts:#43423f;--tm:#898781;--tacc:#185fa5;--up:#e0473f;--dn:#2f7ed8;--gd:#14a07a;--am:#d9820f;--font:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;}
+@media (prefers-color-scheme:dark){:root{--s0:#1a1a19;--s1:#222220;--s2:#2c2c2a;--bd:rgba(255,255,255,0.12);--bgacc:#0c2740;--tp:#f5f5f0;--ts:#cfcec4;--tm:#8a8a83;--tacc:#85b7eb;--gd:#2fd39a;--am:#f0a63a;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--s0);color:var(--tp);font-family:var(--font);line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:22px 18px 56px}
+.kick{font-size:12px;color:var(--tacc);font-weight:500;letter-spacing:.03em}
+h1{font-size:22px;font-weight:500;margin:6px 0 2px}
+.type{font-size:15px;color:var(--tp);font-weight:500;margin:2px 0 2px}
+.meta{font-size:12.5px;color:var(--tm);margin-bottom:18px}
+h2{font-size:16.5px;font-weight:500;margin:26px 0 10px;padding-bottom:7px;border-bottom:1.5px solid var(--bd)}
+p{margin:8px 0;font-size:14.5px;color:var(--ts)}
+.lead{background:var(--bgacc);border-radius:12px;padding:14px 16px;font-size:14px;color:var(--tacc);line-height:1.65}
+.row{display:flex;align-items:center;gap:10px;margin:9px 0}
+.row .lab{font-size:13px;color:var(--ts);width:96px;flex:none}
+.bar{flex:1;height:8px;border-radius:999px;background:var(--s1);overflow:hidden;border:0.5px solid var(--bd)}
+.fill{height:100%;border-radius:999px;background:var(--acc)}
+.val{font-size:12px;color:var(--tm);width:74px;flex:none;text-align:right}
+.card{border:0.5px solid var(--bd);border-radius:12px;background:var(--s2);padding:13px 15px;margin:10px 0}
+.card h3{font-size:14.5px;font-weight:500;margin:0 0 5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+.need{border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.6}
+.need.y{background:rgba(20,160,122,0.12);color:var(--gd)}
+.need.n{background:rgba(137,135,129,0.14);color:var(--tm)}
+.need b{color:inherit;font-weight:500}
+.disc{margin-top:24px;padding-top:12px;border-top:0.5px solid var(--bd);font-size:11.5px;color:var(--tm);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kick">INVESTOR PROFILE</div>
+<h1>투자자 프로파일 진단</h1>
+<div class="type">유형: 글로벌 성장–인컴 하이브리드 · 코어–새틀라이트 · 규율형 익절</div>
+<div class="meta">2026-07-19 · 8문항 자가진단 기반 · 참고용</div>
+
+<div class="lead">한 문장 요약: <b>장기·초장기로 우량주·ETF를 코어로 쌓되, 업황 사이클엔 대형 개별주로 치고 빠지며(약 20% 익절) 리스크는 ETF로 관리하는 글로벌 분산형 성장 투자자</b>예요. 판단은 밸류·실적과 거시로 하고, 국장보다 글로벌·펀더멘털을 신뢰하는 성향이 뚜렷해요.</div>
+
+<h2>성향 스코어</h2>
+<div class="row"><span class="lab">투자 기간</span><div class="bar"><div class="fill" style="width:95%"></div></div><span class="val">장기·초장기</span></div>
+<div class="row"><span class="lab">위험 감내</span><div class="bar"><div class="fill" style="width:78%"></div></div><span class="val">높음</span></div>
+<div class="row"><span class="lab">위험 수용력</span><div class="bar"><div class="fill" style="width:58%"></div></div><span class="val">중간</span></div>
+<div class="row"><span class="lab">성장 지향</span><div class="bar"><div class="fill" style="width:80%"></div></div><span class="val">성장+배당</span></div>
+<div class="row"><span class="lab">액티브 정도</span><div class="bar"><div class="fill" style="width:55%"></div></div><span class="val">코어 패시브·새틀라이트 액티브</span></div>
+<div class="row"><span class="lab">글로벌 분산</span><div class="bar"><div class="fill" style="width:85%"></div></div><span class="val">높음</span></div>
+<p style="font-size:12.5px;color:var(--tm)">위험 감내(마음)는 높은데 수용력(자금 여력)은 중간이에요 — 그래서 "공격적으로 가되 ETF 코어로 완충"하는 지금 전략이 두 가지의 균형점으로 잘 맞아요.</p>
+
+<h2>전략 구조 — 코어·새틀라이트</h2>
+<div class="two">
+<div class="card"><h3>코어 (장기 보유)</h3><p style="font-size:13px;margin:4px 0">글로벌 우량주·ETF. 사서 오래 안고 가고, 나이가 들수록 배당·인컴 비중을 늘리는 글라이드 패스. 리스크 관리의 중심.</p></div>
+<div class="card"><h3>새틀라이트 (사이클 트레이딩)</h3><p style="font-size:13px;margin:4px 0">업황 사이클·테마의 대형 개별주. 오래 안 들고 약 <b>20% 익절</b> 규율. 대형주라 거래량·수급 걱정은 적음.</p></div>
+</div>
+
+<h2>의사결정 프레임</h2>
+<p>주로 <b>밸류에이션·실적(펀더멘털)</b>과 <b>거시(금리·환율·업황 사이클)</b>로 판단해요. 차트·수급 의존도는 낮고, 대형주 중심이라 유동성·외국인 수급은 크게 신경 쓰지 않는 편. 국장 거버넌스에 대한 불신 때문에 실적·글로벌 수요로 방향이 정해지는 종목을 선호해요.</p>
+
+<h2>그래서 필요한 정보 / 덜 필요한 정보</h2>
+<p style="font-size:13px;color:var(--tm);margin-bottom:6px">이 성향엔 "실시간 초 단위·기술적·수급" 데이터보다 아래가 훨씬 중요해요.</p>
+<div class="need y"><b>필요 (핵심):</b> 정확한 밸류에이션(PER·선행PER)과 애널 목표가·상승여력 → 익절 타이밍 판단 / 실적·가이던스와 실적 캘린더 / 업황 사이클 지표(반도체 SOX·메모리가, EV 수요, 유가·구리) / 거시(금리·환율·정책) / 과열·밸류밴드 신호(익절 규율용) / 배당·배당성장(코어 인컴용)</div>
+<div class="need n" style="margin-top:8px"><b>덜 필요:</b> 초 단위 실시간 틱 / RSI·MACD 등 정밀 기술지표 / 외국인·기관 수급 세부(대형주 위주라) / 소형주·저유동성 종목 데이터</div>
+<p style="font-size:13.5px;margin-top:10px">결론적으로 <b>월 $100짜리 실시간 API는 이 성향엔 과해요.</b> 정확도가 필요한 건 "실적·목표가·밸류·거시" 정도라, 지연이 좀 있어도 웹 기반으로 충분히 커버돼요. 업그레이드가 필요한 딱 한 가지는 <b>실적/목표가/밸류의 정확도</b>인데, 그건 무료 소스로도 상당 부분 메꿀 수 있어요.</p>
+
+<h2>운영 제안</h2>
+<p>주간 리포트는 <b>코어(자산배분·거시 큰 그림)</b>와 <b>새틀라이트(사이클 종목의 밸류·목표가·익절 구간)</b>를 나눠서 보여주고, 이벤트 리포트는 <b>업황 전환·실적 서프라이즈·거시 충격</b>에 집중하면 성향에 딱 맞아요. 위젯의 종목 카드엔 "익절 참고선"(목표가 대비 현재 위치·과열 신호)을 강조하면 20% 익절 규율에 바로 쓸 수 있어요.</p>
+
+<p class="disc">본 진단은 자가응답 기반의 참고용 요약이며, 투자 자문·권유가 아닙니다. 실제 자산배분·투자 결정과 책임은 본인에게 있습니다.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>월 적립식 플랜</title>
+<style>
+:root{--s0:#f5f4ef;--s1:#faf9f5;--s2:#ffffff;--bd:rgba(0,0,0,0.10);--acc:#378add;--bgacc:#e6f1fb;--tp:#1a1a18;--ts:#43423f;--tm:#898781;--tacc:#185fa5;--up:#e0473f;--dn:#2f7ed8;--gd:#14a07a;--am:#d9820f;--font:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+--growth:#2f7ed8;--div:#14a07a;--glob:#8a8983;--pen:#d9820f;}
+@media (prefers-color-scheme:dark){:root{--s0:#1a1a19;--s1:#222220;--s2:#2c2c2a;--bd:rgba(255,255,255,0.12);--bgacc:#0c2740;--tp:#f5f5f0;--ts:#cfcec4;--tm:#8a8a83;--tacc:#85b7eb;--growth:#5a9bec;--div:#2fd39a;--glob:#9a9992;--pen:#f0a63a;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--s0);color:var(--tp);font-family:var(--font);line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:620px;margin:0 auto;padding:22px 18px 54px}
+.kick{font-size:12px;color:var(--tacc);font-weight:500;letter-spacing:.03em}
+h1{font-size:22px;font-weight:500;margin:6px 0 2px}
+.meta{font-size:12.5px;color:var(--tm);margin-bottom:18px}
+h2{font-size:16px;font-weight:500;margin:24px 0 8px;padding-bottom:6px;border-bottom:1.5px solid var(--bd)}
+p{margin:8px 0;font-size:14px;color:var(--ts)}
+.barwrap{display:flex;height:24px;border-radius:8px;overflow:hidden;margin:12px 0 6px}
+.seg{height:100%}
+.acct{border:0.5px solid var(--bd);border-radius:12px;background:var(--s2);padding:13px 15px;margin:11px 0}
+.acct .ah{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.acct .at{font-size:15px;font-weight:500}
+.acct .ap{font-size:14px;font-weight:500}
+.acct .tagr{font-size:11px;color:var(--tacc);background:var(--bgacc);padding:1px 8px;border-radius:999px;margin-left:6px}
+table{width:100%;border-collapse:collapse;margin:8px 0 2px;font-size:13px}
+td{padding:6px 4px;border-bottom:0.5px solid var(--bd)}
+td:nth-child(2){text-align:right;color:var(--tm);font-size:12px;width:52px}
+td:last-child{text-align:right;font-weight:500;width:64px}
+.dotc{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.note{font-size:12.5px;color:var(--tm);margin-top:6px;line-height:1.6}
+.rule{background:var(--s1);border-radius:11px;padding:12px 14px;font-size:13.5px;color:var(--ts);line-height:1.7;margin:8px 0}
+.callout{background:rgba(217,130,15,0.12);border-radius:11px;padding:11px 14px;font-size:13px;color:var(--am);line-height:1.6;margin:10px 0}
+.disc{margin-top:22px;padding-top:12px;border-top:0.5px solid var(--bd);font-size:11.5px;color:var(--tm);line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kick">MONTHLY DCA PLAN</div>
+<h1>월 적립식 플랜 · 150만</h1>
+<div class="meta">연금저축 50만 + 추가 적립 100만 · 프로파일: 글로벌 분산·성장+배당·장기 · 부채 소각기(2026~2032) 병행</div>
+
+<div class="barwrap">
+<div class="seg" style="width:33%;background:var(--growth)"></div>
+<div class="seg" style="width:33%;background:var(--div)"></div>
+<div class="seg" style="width:20%;background:var(--pen)"></div>
+<div class="seg" style="width:14%;background:var(--glob)"></div>
+</div>
+<p class="note"><span class="dotc" style="background:var(--growth)"></span>S&P500 33% &nbsp; <span class="dotc" style="background:var(--div)"></span>미국배당 33% &nbsp; <span class="dotc" style="background:var(--pen)"></span>나스닥100 20% &nbsp; <span class="dotc" style="background:var(--glob)"></span>글로벌 14%</p>
+
+<div class="acct">
+<div class="ah"><span class="at">① 연금저축 <span class="tagr">세액공제·과세이연</span></span><span class="ap">50만</span></div>
+<div class="note">이미 진행 중. 절세가 가장 센 코어라 최우선 유지.</div>
+<table>
+<tr><td><span class="dotc" style="background:var(--growth)"></span>국내상장 미국 S&P500</td><td>100%</td><td>50만</td></tr>
+</table>
+</div>
+
+<div class="acct">
+<div class="ah"><span class="at">② 추가 적립 <span class="tagr">일반계좌</span></span><span class="ap">100만</span></div>
+<div class="note">유동성 최우선 선택. 언제든 사고팔고 인출이 자유로워 부채 소각기에 맞아요. 단, 국내상장 해외 ETF는 매매차익·분배금이 배당소득 15.4%로 과세되고 연 금융소득 2,000만 초과 시 종합과세 대상이 될 수 있어요 — 매도는 필요할 때만, 장기 보유가 유리해요.</div>
+<table>
+<tr><td><span class="dotc" style="background:var(--div)"></span>미국배당다우존스 (SCHD형)</td><td>50%</td><td>50만</td></tr>
+<tr><td><span class="dotc" style="background:var(--pen)"></span>미국 나스닥100</td><td>30%</td><td>30만</td></tr>
+<tr><td><span class="dotc" style="background:var(--glob)"></span>전세계·선진국(글로벌)</td><td>20%</td><td>20만</td></tr>
+</table>
+<div class="note">연금이 S&P500이라, 적립은 배당 축을 키우고 성장(나스닥)·글로벌 분산을 얹어 전체 균형을 맞췄어요. 나이 들수록 배당 비중을 올리는 글라이드 패스.</div>
+</div>
+
+<h2>운영 규칙</h2>
+<div class="rule">
+· <b>자동이체</b> — 급여일 다음날 3개 상품 자동 매수(신경 안 쓰기).<br>
+· <b>상한 고정</b> — 9.5% 사업자대출이 남아 있는 동안은 월 150만을 넘기지 않기.<br>
+· <b>후퇴 규칙</b> — 현금 여유가 급감하면 <u>추가 적립(②)부터 멈추고</u> 그 돈을 9.5% 상환으로. 연금저축(①)은 세액공제라 최대한 유지.<br>
+· <b>안 건드리기</b> — 적립식은 하락장에 더 싸게 사는 게 핵심. 무섭다고 멈추지 말고 그대로.
+</div>
+
+<div class="callout"><b>솔직한 트레이드오프:</b> 이 추가 100만은 9.5% 상환 대신 시장에 가는 돈이라, 순수 기댓값은 "장기 시장수익 − 9.5%"예요. 습관·분산·시장 노출의 값으로 하는 것이지, 지금의 "부의 엔진"은 여전히 부채 소각이에요. 2032년 완납 후 본격 축적 단계에서 이 적립을 크게 키우면 돼요.</div>
+
+<p class="disc">연금저축·ISA에선 미국 상장 ETF(SPY·SCHD 직접)를 담을 수 없어 국내상장 ETF로 매수해요. 상품명·총보수·세제는 가입 전 확인하세요. 본 플랜은 참고용 예시이며 투자 권유가 아닙니다.</p>
+</div>
+</body>
+</html>
