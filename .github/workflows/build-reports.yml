@@ -1,0 +1,58 @@
+name: Build reports.json
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'reports.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate reports.json
+        run: |
+          python3 - << 'PYEOF'
+          import json, re, glob, subprocess
+          KNOWN = {
+           "weekly_2026-07-19.html": {"title":"산업별 주간 리서치 (오늘자)","date":"2026-07-19","kind":"주간","sub":"코어·새틀라이트·크립토"},
+           "weekly_2026-07-3rd.html": {"title":"주간 리서치 · 7월 3주차","date":"2026-07-13","kind":"주간"},
+           "plan_dca_150.html": {"title":"월 적립식 플랜 (150만)","date":"2026-07-19","kind":"플랜"},
+           "plan_portfolio_1eok.html": {"title":"1억 포트폴리오 배분안","date":"2026-07-19","kind":"플랜"},
+           "investor_profile.html": {"title":"투자자 프로파일","date":"2026-07-19","kind":"프로파일"},
+          }
+          def gd(f):
+              try: return subprocess.check_output(['git','log','-1','--format=%cs','--',f]).decode().strip()
+              except Exception: return ''
+          reports=[]
+          for f in sorted(glob.glob('*.html')):
+              if f=='index.html': continue
+              txt=open(f,encoding='utf-8',errors='ignore').read()
+              m=re.search(r'<!--\s*REPORT\s*(\{.*?\})\s*REPORT\s*-->',txt,re.S)
+              meta={}
+              if m:
+                  try: meta=json.loads(m.group(1))
+                  except Exception: meta={}
+              if not meta and f in KNOWN: meta=dict(KNOWN[f])
+              meta['file']=f
+              meta.setdefault('title',f.replace('.html',''))
+              if not meta.get('date'):
+                  dm=re.search(r'(\d{4}-\d{2}-\d{2})',f); meta['date']=dm.group(1) if dm else gd(f)
+              reports.append(meta)
+          reports.sort(key=lambda x:x.get('date',''),reverse=True)
+          json.dump(reports,open('reports.json','w',encoding='utf-8'),ensure_ascii=False,indent=1)
+          print(len(reports),'reports')
+          PYEOF
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet -- reports.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add reports.json
+            git commit -m "chore: rebuild reports.json [skip ci]"
+            git push
+          else
+            echo "reports.json unchanged"
+          fi
