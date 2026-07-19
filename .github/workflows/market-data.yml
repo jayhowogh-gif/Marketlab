@@ -1,0 +1,74 @@
+name: Fetch market data
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch quotes -> data.json
+        run: |
+          python3 - << 'PYEOF'
+          import json, urllib.request, urllib.parse, time, datetime
+          SYM={
+           "SP":("^GSPC","idx"),"NDQ":("^IXIC","idx"),"SOX":("^SOX","idx"),"KOS":("^KS11","idx"),
+           "VIX":("^VIX","f1"),"T10":("^TNX","pct"),"DXY":("DX-Y.NYB","f1"),"KRW":("KRW=X","won0"),
+           "AU":("GC=F","usd0"),"OIL":("CL=F","usd1"),"CU":("HG=F","usd2"),
+           "NVDA":("NVDA","usd2"),"AMD":("AMD","usd2"),"TSM":("TSM","usd2"),"AAPL":("AAPL","usd2"),
+           "MSFT":("MSFT","usd2"),"GOOGL":("GOOGL","usd2"),"AMZN":("AMZN","usd2"),"TSLA":("TSLA","usd2"),
+           "JPM":("JPM","usd2"),"XOM":("XOM","usd2"),
+           "SPY":("SPY","usd2"),"QQQ":("QQQ","usd2"),"SCHD":("SCHD","usd2"),"VT":("VT","usd2"),
+           "IBIT":("IBIT","usd2"),"TLT":("TLT","usd2"),"GLD":("GLD","usd2"),"SGOV":("SGOV","usd2"),
+           "005930":("005930.KS","won0"),"000660":("000660.KS","won0"),"NAVER":("035420.KS","won0"),
+           "035720":("035720.KS","won0"),"005380":("005380.KS","won0"),"000270":("000270.KS","won0"),
+           "373220":("373220.KS","won0"),"006400":("006400.KS","won0"),"207940":("207940.KS","won0"),
+           "068270":("068270.KS","won0"),"105560":("105560.KS","won0"),"012450":("012450.KS","won0"),
+           "BTC":("BTC-USD","usd0"),"BTCA":("BTC-USD","usd0"),"ETHA":("ETH-USD","usd0"),
+          }
+          def fmt(v,f):
+              if f=="usd2": return "${:,.2f}".format(v)
+              if f=="usd1": return "${:,.1f}".format(v)
+              if f=="usd0": return "${:,.0f}".format(v)
+              if f=="won0": return "{:,.0f}원".format(v)
+              if f=="idx":  return "{:,.0f}".format(v)
+              if f=="f1":   return "{:.1f}".format(v)
+              if f=="pct":  return "{:.2f}%".format(v)
+              return "{:,.2f}".format(v)
+          def fetch(sym):
+              url="https://query1.finance.yahoo.com/v8/finance/chart/%s?range=1y&interval=1d"%urllib.parse.quote(sym)
+              req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0"})
+              with urllib.request.urlopen(req,timeout=20) as r: d=json.load(r)
+              res=d["chart"]["result"][0]; meta=res["meta"]
+              price=meta.get("regularMarketPrice"); prev=meta.get("chartPreviousClose") or meta.get("previousClose")
+              closes=[c for c in res["indicators"]["quote"][0]["close"] if c is not None]
+              hi=max(closes) if closes else price; lo=min(closes) if closes else price
+              chg=((price-prev)/prev*100.0) if (price and prev) else 0.0
+              return price,chg,hi,lo
+          out={}; ok=0; fail=[]
+          for aid,(sym,f) in SYM.items():
+              try:
+                  p,c,hi,lo=fetch(sym)
+                  out[aid]={"cur":fmt(p,f),"chg":round(c,2),"px":round(p,4),"hi":round(hi,4),"lo":round(lo,4),"up":1 if c>=0 else -1}
+                  ok+=1
+              except Exception as e:
+                  fail.append(aid)
+              time.sleep(0.2)
+          payload={"asof":datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),"quotes":out,"ok":ok,"fail":fail}
+          json.dump(payload,open("data.json","w",encoding="utf-8"),ensure_ascii=False,indent=1)
+          print("ok",ok,"fail",fail)
+          PYEOF
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet -- data.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data.json
+            git commit -m "data: refresh quotes [skip ci]"
+            git push
+          else
+            echo "no change"
+          fi
