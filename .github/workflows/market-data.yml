@@ -10,17 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch quotes -> data.json
+      - name: Fetch quotes + fundamentals -> data.json
         run: |
           python3 - << 'PYEOF'
-          import json, urllib.request, urllib.parse, time, datetime
+          import json, urllib.request, urllib.parse, urllib.error, http.cookiejar, time, datetime
           SYM={
            "SP":("^GSPC","idx"),"NDQ":("^IXIC","idx"),"SOX":("^SOX","idx"),"KOS":("^KS11","idx"),
            "VIX":("^VIX","f1"),"T10":("^TNX","pct"),"DXY":("DX-Y.NYB","f1"),"KRW":("KRW=X","won0"),
            "AU":("GC=F","usd0"),"OIL":("CL=F","usd1"),"CU":("HG=F","usd2"),
            "NVDA":("NVDA","usd2"),"AMD":("AMD","usd2"),"TSM":("TSM","usd2"),"AAPL":("AAPL","usd2"),
            "MSFT":("MSFT","usd2"),"GOOGL":("GOOGL","usd2"),"AMZN":("AMZN","usd2"),"TSLA":("TSLA","usd2"),
-           "JPM":("JPM","usd2"),"XOM":("XOM","usd2"),
+           "JPM":("JPM","usd2"),"XOM":("XOM","usd2"),"SPCX":("SPCX","usd2"),
            "SPY":("SPY","usd2"),"QQQ":("QQQ","usd2"),"SCHD":("SCHD","usd2"),"VT":("VT","usd2"),
            "IBIT":("IBIT","usd2"),"TLT":("TLT","usd2"),"GLD":("GLD","usd2"),"SGOV":("SGOV","usd2"),
            "005930":("005930.KS","won0"),"000660":("000660.KS","won0"),"NAVER":("035420.KS","won0"),
@@ -29,6 +29,20 @@ jobs:
            "068270":("068270.KS","won0"),"105560":("105560.KS","won0"),"012450":("012450.KS","won0"),
            "BTC":("BTC-USD","usd0"),"BTCA":("BTC-USD","usd0"),"ETHA":("ETH-USD","usd0"),
           }
+          FUND_IDS={"NVDA","AMD","TSM","AAPL","MSFT","GOOGL","AMZN","TSLA","JPM","XOM","SPCX",
+                    "005930","000660","NAVER","035720","005380","000270","373220","006400","207940","068270","105560","012450"}
+          RMAP={"strong_buy":"적극 매수","buy":"매수","hold":"보유","underperform":"비중축소","sell":"매도"}
+          cj=http.cookiejar.CookieJar()
+          op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
+          op.addheaders=[("User-Agent","Mozilla/5.0")]
+          crumb=None
+          try:
+              op.open("https://fc.yahoo.com/",timeout=15)
+          except Exception: pass
+          try:
+              with op.open("https://query1.finance.yahoo.com/v1/test/getcrumb",timeout=15) as r:
+                  crumb=r.read().decode().strip()
+          except Exception: crumb=None
           def fmt(v,f):
               if f=="usd2": return "${:,.2f}".format(v)
               if f=="usd1": return "${:,.1f}".format(v)
@@ -38,10 +52,9 @@ jobs:
               if f=="f1":   return "{:.1f}".format(v)
               if f=="pct":  return "{:.2f}%".format(v)
               return "{:,.2f}".format(v)
-          def fetch(sym):
+          def chart(sym):
               url="https://query1.finance.yahoo.com/v8/finance/chart/%s?range=1y&interval=1d"%urllib.parse.quote(sym)
-              req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0"})
-              with urllib.request.urlopen(req,timeout=20) as r: d=json.load(r)
+              with op.open(urllib.request.Request(url),timeout=20) as r: d=json.load(r)
               res=d["chart"]["result"][0]; meta=res["meta"]
               closes=[c for c in res["indicators"]["quote"][0]["close"] if c is not None]
               price=meta.get("regularMarketPrice") or (closes[-1] if closes else None)
@@ -49,18 +62,53 @@ jobs:
               hi=max(closes) if closes else price; lo=min(closes) if closes else price
               chg=((price-prev)/prev*100.0) if (price and prev) else 0.0
               return price,chg,hi,lo
-          out={}; ok=0; fail=[]
+          def raw(o,k):
+              v=o.get(k); return v.get("raw") if isinstance(v,dict) and "raw" in v else None
+          def fmt_mcap(v,sym):
+              if sym.endswith(".KS"): return "%.0f조원"%(v/1e12)
+              if v>=1e12: return "$%.2fT"%(v/1e12)
+              if v>=1e9: return "$%.0fB"%(v/1e9)
+              return "$%.0fM"%(v/1e6)
+          def fund(sym):
+              if not crumb: return {}
+              mods="summaryDetail,financialData,defaultKeyStatistics,price"
+              url="https://query1.finance.yahoo.com/v10/finance/quoteSummary/%s?modules=%s&crumb=%s"%(urllib.parse.quote(sym),mods,urllib.parse.quote(crumb))
+              with op.open(urllib.request.Request(url),timeout=20) as r: d=json.load(r)
+              res=d["quoteSummary"]["result"][0]
+              sd=res.get("summaryDetail",{}); fd=res.get("financialData",{}); ks=res.get("defaultKeyStatistics",{}); pr=res.get("price",{})
+              out={}
+              pe=raw(sd,"trailingPE") or raw(ks,"trailingPE"); fpe=raw(sd,"forwardPE") or raw(ks,"forwardPE")
+              tgt=raw(fd,"targetMeanPrice"); tlo=raw(fd,"targetLowPrice"); thi=raw(fd,"targetHighPrice")
+              mcap=raw(pr,"marketCap") or raw(sd,"marketCap"); dy=raw(sd,"dividendYield")
+              eg=raw(fd,"earningsGrowth"); rg=raw(fd,"revenueGrowth"); pm=raw(fd,"profitMargins"); rk=fd.get("recommendationKey")
+              if pe: out["pe"]="%.1f"%pe
+              if fpe: out["fpe"]="%.1f"%fpe
+              if tgt: out["tgt"]=round(tgt,2)
+              if tlo: out["tgtLo"]=round(tlo,2)
+              if thi: out["tgtHi"]=round(thi,2)
+              if mcap: out["mcap"]=fmt_mcap(mcap,sym)
+              if dy is not None: out["div"]="%.2f%%"%(dy*100)
+              g=eg if eg is not None else rg
+              if g is not None: out["growth"]="%+.1f%%"%(g*100)
+              if pm is not None: out["margin"]="약 %.0f%%"%(pm*100)
+              if rk and rk in RMAP: out["rating"]=RMAP[rk]
+              return out
+          out={}; ok=0; fail=[]; fok=0
           for aid,(sym,f) in SYM.items():
               try:
-                  p,c,hi,lo=fetch(sym)
-                  out[aid]={"cur":fmt(p,f),"chg":round(c,2),"px":round(p,4),"hi":round(hi,4),"lo":round(lo,4),"up":1 if c>=0 else -1}
-                  ok+=1
-              except Exception as e:
-                  fail.append(aid)
-              time.sleep(0.2)
-          payload={"asof":datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),"quotes":out,"ok":ok,"fail":fail}
+                  p,c,hi,lo=chart(sym)
+                  rec={"cur":fmt(p,f),"chg":round(c,2),"px":round(p,4),"hi":round(hi,4),"lo":round(lo,4),"up":1 if c>=0 else -1}
+                  if aid in FUND_IDS:
+                      try:
+                          fu=fund(sym)
+                          if fu: rec["fund"]=fu; fok+=1
+                      except Exception: pass
+                  out[aid]=rec; ok+=1
+              except Exception: fail.append(aid)
+              time.sleep(0.25)
+          payload={"asof":datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),"quotes":out,"ok":ok,"fund":fok,"fail":fail,"crumb":bool(crumb)}
           json.dump(payload,open("data.json","w",encoding="utf-8"),ensure_ascii=False,indent=1)
-          print("ok",ok,"fail",fail)
+          print("ok",ok,"fund",fok,"crumb",bool(crumb),"fail",fail)
           PYEOF
       - name: Commit if changed
         run: |
@@ -68,7 +116,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data.json
           if ! git diff --cached --quiet; then
-            git commit -m "data: refresh quotes [skip ci]"
+            git commit -m "data: refresh quotes+fundamentals [skip ci]"
             git push
           else
             echo "no change"
