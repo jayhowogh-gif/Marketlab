@@ -1,1 +1,103 @@
 
+name: Weekly snapshot report
+on:
+  schedule:
+    - cron: '0 22 * * 0'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build weekly snapshot + rebuild reports.json
+        run: |
+          python3 - << 'PYEOF'
+          import json, glob, re, datetime
+          from collections import defaultdict
+          NAMES={
+           "NVDA":("엔비디아","반도체"),"AMD":("AMD","반도체"),"TSM":("TSMC","반도체"),
+           "005930":("삼성전자","반도체"),"000660":("SK하이닉스","반도체"),
+           "AAPL":("애플","빅테크·플랫폼"),"MSFT":("마이크로소프트","빅테크·플랫폼"),"GOOGL":("알파벳","빅테크·플랫폼"),"AMZN":("아마존","빅테크·플랫폼"),
+           "NAVER":("네이버","인터넷·플랫폼"),"035720":("카카오","인터넷·플랫폼"),
+           "TSLA":("테슬라","자동차·EV"),"005380":("현대차","자동차·EV"),"000270":("기아","자동차·EV"),
+           "373220":("LG에너지솔루션","2차전지"),"006400":("삼성SDI","2차전지"),
+           "207940":("삼성바이오로직스","바이오·헬스케어"),"068270":("셀트리온","바이오·헬스케어"),
+           "105560":("KB금융","금융"),"JPM":("JP모건","금융"),
+           "012450":("한화에어로스페이스","방산"),"XOM":("엑슨모빌","에너지"),"SPCX":("SpaceX","우주·항공"),
+          }
+          data=json.load(open('data.json',encoding='utf-8')); q=data.get('quotes',{})
+          rows=[]
+          for aid,(name,sec) in NAMES.items():
+              v=q.get(aid)
+              if v and v.get('chg') is not None: rows.append((name,sec,float(v['chg']),v.get('cur','')))
+          def col(c): return '#e0473f' if c>=0 else '#2f7ed8'
+          def sgn(c): return ('+%.2f%%'%c) if c>=0 else ('%.2f%%'%c)
+          rs=sorted(rows,key=lambda r:r[2],reverse=True)
+          top=rs[:5]; bot=[r for r in rs[::-1]][:5]
+          secm=defaultdict(list)
+          for name,sec,chg,cur in rows: secm[sec].append(chg)
+          secr=sorted([(s,sum(c)/len(c),len(c)) for s,c in secm.items()],key=lambda x:x[1],reverse=True)
+          now=datetime.datetime.utcnow()+datetime.timedelta(hours=9)
+          ds=now.strftime('%Y-%m-%d')
+          asof=data.get('asof','')
+          def rowhtml(r): return '<tr><td>%s</td><td style="color:%s;text-align:right;font-weight:500">%s</td><td style="text-align:right;color:#898781">%s</td></tr>'%(r[0],col(r[2]),sgn(r[2]),r[3])
+          th=''.join(rowhtml(r) for r in top); bh=''.join(rowhtml(r) for r in bot)
+          sh=''.join('<tr><td>%s</td><td style="color:%s;text-align:right;font-weight:500">%s</td><td style="text-align:right;color:#898781">%d종목</td></tr>'%(s,col(a),sgn(a),n) for s,a,n in secr)
+          meta='{"title":"주간 자동 스냅샷 · %s","date":"%s","kind":"스냅샷","sub":"등락 상위/하위·업종 요약(실측)"}'%(ds,ds)
+          html='''<!--REPORT %s REPORT-->
+          <!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>주간 자동 스냅샷</title>
+          <style>body{margin:0;background:#f5f4ef;color:#1a1a18;font-family:system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.7}
+          @media(prefers-color-scheme:dark){body{background:#1a1a19;color:#f5f5f0}.card{background:#2c2c2a!important;border-color:rgba(255,255,255,.12)!important}td{border-color:rgba(255,255,255,.1)!important}}
+          .wrap{max-width:620px;margin:0 auto;padding:22px 18px 50px}.kick{font-size:12px;color:#185fa5;font-weight:500}
+          h1{font-size:21px;font-weight:500;margin:6px 0 2px}.meta{font-size:12.5px;color:#898781;margin-bottom:16px}
+          h2{font-size:16px;font-weight:500;margin:22px 0 6px}.card{border:.5px solid rgba(0,0,0,.1);border-radius:12px;background:#fff;padding:6px 14px;margin:8px 0}
+          table{width:100%%;border-collapse:collapse;font-size:14px}td{padding:8px 2px;border-bottom:.5px solid rgba(0,0,0,.08)}tr:last-child td{border-bottom:none}
+          .disc{margin-top:20px;padding-top:12px;border-top:.5px solid rgba(0,0,0,.1);font-size:11.5px;color:#898781}</style></head>
+          <body><div class="wrap"><div class="kick">AUTO SNAPSHOT</div><h1>주간 자동 스냅샷 · %s</h1>
+          <div class="meta">실측 데이터 기준 · 자동 생성 · 데이터 시각 %s</div>
+          <h2>▲ 등락 상위</h2><div class="card"><table>%s</table></div>
+          <h2>▼ 등락 하위</h2><div class="card"><table>%s</table></div>
+          <h2>업종 요약 (평균 등락)</h2><div class="card"><table>%s</table></div>
+          <p class="disc">본 스냅샷은 실측 시세를 기계적으로 요약한 자료이며 투자 권유가 아닙니다. 값은 데이터 수집 시점 기준이고, 심층 분석·전망은 별도 리서치 리포트를 참고하세요.</p>
+          </div></body></html>'''%(meta,ds,asof,th,bh,sh)
+          fn='auto_snapshot_%s.html'%ds
+          open(fn,'w',encoding='utf-8').write(html)
+          print('wrote',fn)
+          KNOWN={
+           "weekly_2026-07-19.html":{"title":"산업별 주간 리서치 (오늘자)","date":"2026-07-19","kind":"주간","sub":"코어·새틀라이트·크립토"},
+           "weekly_2026-07-3rd.html":{"title":"주간 리서치 · 7월 3주차","date":"2026-07-13","kind":"주간"},
+           "plan_dca_150.html":{"title":"월 적립식 플랜 (150만)","date":"2026-07-19","kind":"플랜"},
+           "plan_portfolio_1eok.html":{"title":"1억 포트폴리오 배분안","date":"2026-07-19","kind":"플랜"},
+           "investor_profile.html":{"title":"투자자 프로파일","date":"2026-07-19","kind":"프로파일"},
+          }
+          reps=[]
+          for f in sorted(glob.glob('*.html')):
+              if f=='index.html': continue
+              txt=open(f,encoding='utf-8',errors='ignore').read()
+              m=re.search(r'<!--\s*REPORT\s*(\{.*?\})\s*REPORT\s*-->',txt,re.S)
+              mt={}
+              if m:
+                  try: mt=json.loads(m.group(1))
+                  except Exception: mt={}
+              if not mt and f in KNOWN: mt=dict(KNOWN[f])
+              mt['file']=f; mt.setdefault('title',f.replace('.html',''))
+              if not mt.get('date'):
+                  dm=re.search(r'(\d{4}-\d{2}-\d{2})',f); mt['date']=dm.group(1) if dm else ''
+              reps.append(mt)
+          reps.sort(key=lambda x:x.get('date',''),reverse=True)
+          json.dump(reps,open('reports.json','w',encoding='utf-8'),ensure_ascii=False,indent=1)
+          print('reports.json',len(reps))
+          PYEOF
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "report: weekly auto snapshot [skip ci]"
+            git push
+          else
+            echo "no change"
+          fi
